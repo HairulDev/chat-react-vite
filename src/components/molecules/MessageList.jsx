@@ -69,7 +69,6 @@ const MessageList = () => {
   const [form, setForm] = useState(initialState);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const localStorageRes = JSON.parse(localStorage.getItem("profile"));
-  const chatroomStorage = JSON.parse(localStorage.getItem("chatroom"));
 
   useEffect(() => {
     const ws = new WebSocket(`http://localhost:3001/cable`);
@@ -104,14 +103,13 @@ const MessageList = () => {
     dispatch(fetchMessages())
       .then((res) => setStateMessages(res))
       .catch((err) => console.log("err", err));
-    dispatch(fetchGroups());
     dispatch(fetchUsers());
     dispatch(fetchUser(localStorageRes?.id));
   }, [dispatch]);
 
   useEffect(() => {
-    setForm({ ...messageBy, group_id: selectedGroup?.id });
-  }, [messageBy, selectedGroup]);
+    setForm(messageBy);
+  }, [messageBy]);
 
   const handleFetchMessage = (id) => {
     dispatch(fetchMessage(id))
@@ -152,7 +150,6 @@ const MessageList = () => {
       email: localStorageRes.email,
       image: localStorageRes.image,
       user_created: localStorageRes.id,
-      group_id: selectedGroup?.id,
     };
     if (!form.id) {
       dispatch(createMessage(payload));
@@ -167,12 +164,6 @@ const MessageList = () => {
   const sendMessage = () => {
     setOpen(true);
   };
-
-  const onSelectGroup = (group) => {
-    setSelectedGroup(group);
-  };
-  console.log("groups", groups);
-  console.log("selectedGroup", selectedGroup);
 
   const logout = async () => {
     localStorage.clear();
@@ -196,23 +187,6 @@ const MessageList = () => {
       </div>
     );
 
-  if (!chatroomStorage)
-    return (
-      <div className="flex items-center justify-center mt-40">
-        <a
-          href="/group"
-          className="bg-blue-500 text-white py-2 px-4 rounded-full flex items-center"
-        >
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/e2430b4fcf89534bd731d7ae22ce329191f5ae73d2cf88492ac0df499895055c?apiKey=3e8d7fdb86a04f0f8471ea107a1f56cc&"
-            alt="Choose user"
-            className="mr-2"
-          />
-          Choose chatroom please
-        </a>
-      </div>
-    );
-
   return (
     <section className="flex flex-col py-14 mt-4 mx-auto w-full shadow-2xl bg-slate-800 max-w-[500px] rounded-[40px]">
       <header className="flex flex-col px-9 w-full">
@@ -226,16 +200,6 @@ const MessageList = () => {
                 <Avatar index={index + 1} src={`./images/${user.image}`} />
               );
             })}
-            <div>
-              <h2 className="text-white ">Group Chat</h2>
-              <ul>
-                {groups?.map((group) => (
-                  <li key={group.id} onClick={() => onSelectGroup(group)}>
-                    <p className="text-white ">{group.name}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       </header>
